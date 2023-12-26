@@ -4,11 +4,14 @@
 #include <time.h>
 #include "pacman.h"
 #include "mapa.h"
+#include "ui.h"
+
 
 //matriz de 5 linhas por 10 clounas
 //struct mapa m; //Antes de utilizar o 'typedef'
 MAPA m; //Utilizamos o 'typedef' na pasta "pacman.h"
 POSICAO heroi;
+int tempilula = 0;
 
 int praondeofantasmavai(int xatual, int yatual, int* xdestino, int* ydestino){
     
@@ -39,21 +42,22 @@ void fantasmas() {
 
     for(int i = 0; i < m.linhas; i++){
         for(int j = 0; j < m.colunas; j++){
-            
-            int xdestino;
-            int ydestino;
+            if(copia.matriz[i][j] == FANTASMA){
+                int xdestino;
+                int ydestino;
 
-            int encontrou = praondeofantasmavai(i, j, &xdestino, &ydestino);
+                int encontrou = praondeofantasmavai(i, j, &xdestino, &ydestino);
 
-            if(encontrou) {
-                andanomapa(&m, i, j, xdestino, ydestino);
-            }
-
-            /*if(copia.matriz[i][j] == FANTASMA){
-                if(ehvalida(&m, i, j+1) && ehvazia(&m, i, j+1)) {
-                    andanomapa(&m, i, j, i, j+1);
+                if(encontrou) {
+                    andanomapa(&m, i, j, xdestino, ydestino);
                 }
-            }*/ //Vai fazer o mapa andar apenas para a direita, e detetar se é fim ou se tem alguma parede no mapa
+
+                /*if(copia.matriz[i][j] == FANTASMA){
+                    if(ehvalida(&m, i, j+1) && ehvazia(&m, i, j+1)) {
+                        andanomapa(&m, i, j, i, j+1);
+                    }
+                }*/ //Vai fazer o mapa andar apenas para a direita, e detetar se é fim ou se tem alguma parede no mapa
+            }
         }
     }
     liberamapa(&copia);
@@ -103,6 +107,10 @@ void move (char direcao) {
     if(!podeandar(&m, HEROI, proximox, proximoy))
         return;
 
+    if(ehpersonagem(&m, PILULA, proximox, proximoy)){
+        tempilula = 1;
+    }
+
     andanomapa(&m, heroi.x, heroi.y,
         proximox, proximoy);
     heroi.x = proximox;
@@ -111,6 +119,48 @@ void move (char direcao) {
     //m.matriz[heroi.x][heroi.y] = '.'; Nós colocamos esta condição, para não ficar com dois '@' no mapa, um na posição atual e outro na nova posição
 }
 
+void explodepilula(){
+
+    if(!tempilula) return;
+
+    explodepilula2(heroi.x, heroi.y, 0, 1, 3);
+    explodepilula2(heroi.x, heroi.y, 0, -1, 3);
+    explodepilula2(heroi.x, heroi.y, 1, 0, 3);
+    explodepilula2(heroi.x, heroi.y, -1, 0, 3);
+
+    tempilula = 0;
+}
+
+void explodepilula2(int x, int y,  int somax, int somay, int qtd) {
+
+    if(qtd == 0) return;
+
+    int novox = x + somax;
+    int novoy = y + somay;
+
+    if(!ehvalida(&m, novox, novoy)) return;
+    if (ehparede(&m, novox, novoy)) return;
+
+
+    
+    m.matriz[novox][novoy] = VAZIO;
+    explodepilula2(novox, novoy, somax, somay, qtd -1);
+}
+/*void explodepilula(){
+
+    for(int i = 1; i <= 3; i++) {
+        if(ehvalida(&m, heroi.x, heroi.y+i)){
+            
+            if(ehparede(&m, heroi.x, heroi.y+i)){
+                break;
+            }
+            
+            m.matriz[heroi.x][heroi.y+i] = VAZIO;
+        }
+    }
+    printf("explodiu");
+}*/
+
 int main() {
  
     lemapa(&m);
@@ -118,12 +168,15 @@ int main() {
 
     do {
 
+        printf("Tem pilula: %s\n", (tempilula ? "SIM" : "NAO "));
         imprimemapa(&m);
 
         char comando;
         scanf(" %c", &comando);
         
         move(comando);
+        if(comando == BOMBA) explodepilula();
+
         fantasmas();
 
     } while(!acabou());

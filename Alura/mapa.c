@@ -124,15 +124,15 @@ void lemapa(MAPA* m){
     
     alocamapa(m);
 
-     for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 5; i++){
         fscanf(f, "%s", m->matriz[i]); //Está a passar apenas o valor da linha
     }
 
     fclose(f);
 }
 
-void imprimemapa(MAPA* m){
+/*void imprimemapa(MAPA* m){
     for(int i = 0; i < 5; i++){
         printf("%s\n", m->matriz[i]); //Está a dar print na linha correspondente do 'i'
     }
-}
+}*/
