@@ -36,5 +36,7 @@ void find_hero(MAP* m, HERO_POSITION* hero_position);
 
 int wall(MAP*m, int next_movex, int next_movey);
 
-void ghost(MAP* m, GHOST_POSITION* ghost_position); //Locate ghost on the map
+
 void move_ghost(MAP* m, GHOST_POSITION* ghost_position, int direction); //Moves the ghosts
+
+void copy_map(MAP* destiny, MAP* origin);
